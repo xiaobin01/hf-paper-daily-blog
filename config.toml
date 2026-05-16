@@ -1,0 +1,25 @@
+baseURL = "https://xiaobin01.github.io/hf-paper-daily-blog/"
+languageCode = "zh-CN"
+title = "HF Paper Daily Blog"
+theme = "PaperMod"
+paginate = 10
+summaryLength = 30
+
+[params]
+  description = "每日 HuggingFace 热门 AI 论文深度阅读"
+  author = "xiaobin01"
+  defaultTheme = "auto"
+  ShowReadingTime = true
+  ShowBreadCrumbs = true
+  ShowCodeCopyButtons = true
+  ShowToc = true
+  TocOpen = true
+
+  [params.homeInfoParams]
+    Title = "📚 HF Paper Daily Blog"
+    Content = "每日自动抓取 HuggingFace 热门论文，AI 深度解读，图文并茂。每天 10 篇，紧跟 AI 前沿。"
+
+[markup]
+  [markup.goldmark]
+    [markup.goldmark.renderer]
+      unsafe = true  # allow raw HTML in markdown
