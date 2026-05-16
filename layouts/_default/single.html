@@ -1,6 +1,6 @@
 {{ define "main" }}
 <article>
-  <a href=".." class="back-link">← 返回日报列表</a>
+  <a href="{{ .CurrentSection.RelPermalink }}" class="back-link">← 返回日报：{{ .Date.Format "2006-01-02" }}</a>
   {{ .Content }}
 </article>
 {{ end }}
