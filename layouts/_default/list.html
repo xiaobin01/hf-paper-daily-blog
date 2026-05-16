@@ -1,0 +1,19 @@
+{{ define "main" }}
+<h2>📅 论文日报</h2>
+<ul class="paper-list">
+  {{ $paginator := .Paginate (sort (where .Site.Pages "Type" "posts") "Date" "desc") }}
+  {{ range $paginator.Pages }}
+  <li class="paper-item">
+    <h3><a href="{{ .RelPermalink }}">{{ .Title }}</a></h3>
+    <div class="paper-meta">
+      📅 {{ .Date.Format "2006-01-02" }}
+      {{ with .Params.arxiv_id }}· arXiv: {{ . }}{{ end }}
+    </div>
+    {{ if .Params.tags }}
+      {{ range .Params.tags }}<span class="tag">{{ . }}</span>{{ end }}
+    {{ end }}
+  </li>
+  {{ end }}
+</ul>
+{{ template "_internal/pagination.html" . }}
+{{ end }}

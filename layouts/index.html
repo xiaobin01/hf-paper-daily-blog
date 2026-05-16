@@ -1,0 +1,21 @@
+{{ define "main" }}
+<div style="text-align:center;padding:60px 0;">
+  <h2>📚 每日 HuggingFace 热门 AI 论文深度阅读</h2>
+  <p style="margin:16px 0;color:#666;">每天自动抓取 Top 10 热门论文，AI 深度解读，图文并茂</p>
+  <p style="margin:20px 0;">
+    <a href="{{ "posts" | relURL }}" style="display:inline-block;padding:12px 24px;background:var(--link);color:#fff;border-radius:6px;font-size:1.1em;">📖 浏览日报</a>
+  </p>
+</div>
+<ul class="paper-list">
+  <h3 style="margin:20px 0 12px;">📰 最近更新</h3>
+  {{ range first 10 (sort (where .Site.Pages "Type" "posts") "Date" "desc") }}
+  <li class="paper-item">
+    <h4><a href="{{ .RelPermalink }}">{{ .Title }}</a></h4>
+    <div class="paper-meta">
+      📅 {{ .Date.Format "2006-01-02" }}
+      {{ with .Params.arxiv_id }}· arXiv: {{ . }}{{ end }}
+    </div>
+  </li>
+  {{ end }}
+</ul>
+{{ end }}

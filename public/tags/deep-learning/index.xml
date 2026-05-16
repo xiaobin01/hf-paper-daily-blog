@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>Deep-Learning on HF Paper Daily Blog</title><link>https://xiaobin01.github.io/hf-paper-daily-blog/tags/deep-learning/</link><description>Recent content in Deep-Learning on HF Paper Daily Blog</description><generator>Hugo</generator><language>zh-CN</language><lastBuildDate>Sat, 16 May 2026 09:00:00 +0800</lastBuildDate><atom:link href="https://xiaobin01.github.io/hf-paper-daily-blog/tags/deep-learning/index.xml" rel="self" type="application/rss+xml"/><item><title>Aligning Latent Geometry for Spherical Flow Matching in Image Generation</title><link>https://xiaobin01.github.io/hf-paper-daily-blog/posts/2026-05-16/2605.15193/</link><pubDate>Sat, 16 May 2026 09:00:00 +0800</pubDate><guid>https://xiaobin01.github.io/hf-paper-daily-blog/posts/2026-05-16/2605.15193/</guid><description>&lt;h1 id="aligning-latent-geometry-for-spherical-flow-matching-in-image-generation">Aligning Latent Geometry for Spherical Flow Matching in Image Generation&lt;/h1>
+&lt;p>为图像生成中的球面流匹配对齐潜在几何&lt;/p>
+&lt;blockquote>
+&lt;p>导读摘要：这篇论文抓住了 latent flow matching 里一个很容易被忽略、但影响很大的问题：VAE 潜变量和高斯噪声其实都集中在高维“薄球壳”上，可传统方法却用欧氏直线把两者连接起来，导致训练路径频繁穿过几乎不真实出现的球内区域。作者进一步证明，decoder 对 token 的“方向”远比“长度”更敏感，于是提出把每个 latent token 投到固定半径球面上、把噪声也变成球面先验、只微调 decoder，并将线性插值改成球面插值 SLERP。这样整条流动路径始终留在球面上，训练目标天然只剩角向运动。方法不改扩散骨干、也不依赖额外编码器，却在 ImageNet-256 上对多种 tokenizer 和不同规模模型都稳定提升 FID，并显著加快达到同等质量所需的训练步数。&lt;/p>&lt;/blockquote>
+&lt;h2 id="一问题不在模型骨干而在-latent-空间里走错了路">一、问题不在模型骨干，而在 latent 空间里“走错了路”&lt;/h2>
+&lt;p>这篇工作最重要的判断是：&lt;strong>latent flow matching 的瓶颈，不一定来自生成器能力不足，而可能来自训练路径与潜空间几何结构不匹配。&lt;/strong>&lt;/p>
+&lt;p>标准 latent flow matching 的做法很直接：令噪声端点 (z_0 \sim \mathcal{N}(0, I))，数据端点 (z_1 = E(x))，然后在两者之间做线性插值
+[
+z_t = (1-t)z_0 + t z_1
+]
+并训练模型去预测对应速度。这套做法默认 latent 空间是“平直欧氏空间”，直线就是自然路径。&lt;/p>
+&lt;p>但作者指出，这个默认前提对 VAE latent 并不合适。原因有两层：&lt;/p>
+&lt;ol>
+&lt;li>&lt;strong>高斯噪声本身在高维里就集中在薄球壳上。&lt;/strong>&lt;/li>
+&lt;li>&lt;strong>经过 tokenizer 预处理后的数据 latent token，范数也同样集中在薄球壳上。&lt;/strong>&lt;/li>
+&lt;/ol>
+&lt;p>也就是说，起点和终点都靠近某个球壳，但线性路径却会穿过球体内部。中间那些半径更小的位置，既不像噪声端，也不像真实数据端，模型却被迫花大量监督去学习它们。&lt;/p></description></item></channel></rss>
