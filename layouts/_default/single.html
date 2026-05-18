@@ -4,50 +4,113 @@
 {{ if $section }}
   {{ $siblings = sort ($section.RegularPages) "Title" "asc" }}
 {{ end }}
+{{ $summary := .Summary | plainify | truncate 240 }}
+{{ $figureMatches := findRE `!\[[^\]]*\]\(([^)]+)\)` .RawContent }}
+{{ $figureCount := len $figureMatches }}
 
 <div class="content-grid">
-  <aside class="glass-card sidebar">
-    <h3>当日论文导航</h3>
-    <p>{{ if $section }}{{ $section.Title }}{{ else }}同日报论文{{ end }}</p>
-    <ul class="sidebar-list">
-      {{ if $section }}
-        <li><a href="{{ $section.RelPermalink }}">← 返回当日导航页</a></li>
-      {{ else }}
-        <li><a href="{{ "posts/" | relURL }}">← 返回日期导航</a></li>
-      {{ end }}
-      {{ range $siblings }}
-      <li>
-        <a class="{{ if eq .RelPermalink $.RelPermalink }}current{{ end }}" href="{{ .RelPermalink }}">{{ .Title }}</a>
-      </li>
-      {{ end }}
-    </ul>
-  </aside>
+  <div class="sidebar-stack">
+    <aside class="summary-card">
+      <div class="toc-title" style="margin-bottom:10px; color:var(--muted);">Paper Snapshot</div>
+      <h3>论文概览</h3>
+      <div class="chip-row" style="margin-bottom:10px;">
+        {{ with .Params.arxiv_id }}<span class="chip">arXiv: {{ . }}</span>{{ end }}
+        <span class="chip">{{ .Date.Format "2006-01-02" }}</span>
+        <span class="chip">{{ len $siblings }} / 当日期次</span>
+        <span class="chip">{{ $figureCount }} 图表</span>
+      </div>
+      <p>先从这里快速确认论文身份、所属期次和图表数量，再决定是否继续深读。</p>
+    </aside>
 
-  <article class="glass-card article-shell">
-    <div class="breadcrumbs">
-      <a href="{{ .Site.Home.RelPermalink }}">首页</a>
-      <span>•</span>
-      <a href="{{ "posts/" | relURL }}">日报导航</a>
-      {{ if $section }}
-      <span>•</span>
-      <a href="{{ $section.RelPermalink }}">{{ $section.Title }}</a>
-      {{ end }}
-      <span>•</span>
-      <span>{{ .Title }}</span>
-    </div>
+    <aside class="sidebar-card">
+      <div class="toc-title" style="margin-bottom:10px; color:var(--muted);">Issue Navigator</div>
+      <h3>同日报论文</h3>
+      <p>{{ if $section }}当前期次：{{ $section.Title }}{{ else }}快速切换到同日报内的其他论文{{ end }}</p>
+      <ul class="sidebar-list">
+        {{ if $section }}
+          <li><a href="{{ $section.RelPermalink }}">← 返回当日期次页</a></li>
+        {{ else }}
+          <li><a href="{{ "posts/" | relURL }}">← 返回期次归档</a></li>
+        {{ end }}
+        {{ range $siblings }}
+          <li><a class="{{ if eq .RelPermalink $.RelPermalink }}current{{ end }}" href="{{ .RelPermalink }}">{{ .Title }}</a></li>
+        {{ end }}
+      </ul>
+    </aside>
 
-    <div class="article-meta-strip">
-      <span class="chip">📅 {{ .Date.Format "2006-01-02" }}</span>
-      {{ with .Params.arxiv_id }}<span class="chip">arXiv: {{ . }}</span>{{ end }}
-      {{ with .Params.tags }}{{ range . }}<span class="chip">{{ . }}</span>{{ end }}{{ end }}
-    </div>
+    {{ if .TableOfContents }}
+    <aside class="sidebar-card">
+      <div class="toc-title" style="margin-bottom:10px; color:var(--muted);">Article TOC</div>
+      <h3>章节导航</h3>
+      <p>长文阅读时可直接跳转到你关心的部分。</p>
+      <div class="toc-list">{{ .TableOfContents }}</div>
+    </aside>
+    {{ end }}
 
-    <div class="action-row" style="margin-bottom:18px;">
-      {{ if $section }}<a class="button-link" href="{{ $section.RelPermalink }}">← 返回当日论文列表</a>{{ end }}
-      <a class="button-link" href="{{ "posts/" | relURL }}">查看所有日期</a>
-    </div>
+    {{ if gt $figureCount 0 }}
+    <aside class="gallery-card">
+      <div class="toc-title" style="margin-bottom:10px; color:var(--muted);">Figure Preview</div>
+      <h3>关键图表预览</h3>
+      <p>这里只保留少量关键图表缩略预览，避免侧栏过重。</p>
+      <div class="figure-rail">
+        {{ range first 4 $figureMatches }}
+          {{ $path := replaceRE `!\[[^\]]*\]\(([^)]+)\)` `$1` . }}
+          <div class="figure-item">
+            <a href="{{ $path | safeURL }}"><img src="{{ $path | safeURL }}" alt="论文图表预览"></a>
+            <a href="{{ $path | safeURL }}">打开大图</a>
+          </div>
+        {{ end }}
+      </div>
+    </aside>
+    {{ end }}
+  </div>
 
-    {{ .Content }}
-  </article>
+  <div class="article-layout">
+    <article class="article-card">
+      <div class="breadcrumbs">
+        <a href="{{ .Site.Home.RelPermalink }}">首页</a>
+        <span>•</span>
+        <a href="{{ "posts/" | relURL }}">论文归档</a>
+        {{ if $section }}
+        <span>•</span>
+        <a href="{{ $section.RelPermalink }}">{{ $section.Title }}</a>
+        {{ end }}
+        <span>•</span>
+        <span>{{ .Title }}</span>
+      </div>
+
+      <div class="article-hero">
+        <div class="chip-row" style="margin-bottom:14px;">
+          <span class="chip accent">Paper</span>
+          <span class="chip">{{ .Date.Format "2006-01-02" }}</span>
+          {{ with .Params.arxiv_id }}<span class="chip">arXiv: {{ . }}</span>{{ end }}
+          {{ with .Params.tags }}{{ range . }}<span class="chip">{{ . }}</span>{{ end }}{{ end }}
+        </div>
+
+        {{ $trimmedRaw := trim .RawContent "\n\r\t " }}
+        {{ if not (hasPrefix $trimmedRaw "# ") }}
+          <h1 class="page-title">{{ .Title }}</h1>
+        {{ end }}
+
+        {{ with $summary }}
+          <p class="article-subtitle">{{ . }}</p>
+        {{ end }}
+
+        <div class="hero-actions">
+          {{ if $section }}<a class="button-link" href="{{ $section.RelPermalink }}">← 返回当日期次</a>{{ end }}
+          <a class="button-link" href="{{ "posts/" | relURL }}">查看全部期次</a>
+          {{ with .Params.arxiv_id }}<a class="button-link primary" href="https://arxiv.org/abs/{{ . }}">查看原论文</a>{{ end }}
+        </div>
+      </div>
+
+      {{ .Content }}
+    </article>
+
+    <section class="summary-card">
+      <div class="section-kicker">Reading Note</div>
+      <h3>这一页做了什么增强</h3>
+      <p>正文页现在同时承担三件事：提供论文元信息、保留同日报导航、为长文增加目录与图表预览。这样你在连续读多篇论文时，不需要频繁返回上一层级重新定位。</p>
+    </section>
+  </div>
 </div>
 {{ end }}

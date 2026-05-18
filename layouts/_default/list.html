@@ -1,29 +1,71 @@
 {{ define "main" }}
-{{ if and (eq .Section "posts") (eq .Kind "section") (eq .RelPermalink ("posts/" | relURL)) }}
+{{ if and (eq .Kind "section") (eq .Section "posts") (not .File) }}
   {{ $datePages := where .Site.RegularPages "Section" "posts" }}
   {{ $grouped := $datePages.GroupByDate "2006-01-02" "desc" }}
-  <section class="hero-card">
-    <div class="eyebrow">Archive</div>
-    <h1 class="hero-title">按日期浏览每一期论文日报。</h1>
-    <p class="hero-desc">这里是完整日报索引页。你先选择某一天，再进入该日期的论文列表，不再需要在同一页查找所有文章入口。</p>
-  </section>
+  {{ $latestGroup := index $grouped 0 }}
 
-  <section class="glass-card" style="padding:28px;">
-    <div class="section-head">
-      <div>
-        <h2>🗂 日期总览</h2>
-        <p>所有日报按日期倒序排列。</p>
+  <section class="hero">
+    <div class="hero-main">
+      <div class="eyebrow">Archive Mode</div>
+      <h1 class="hero-title">按日期进入每一期，再浏览当天的论文清单与深度解读。</h1>
+      <p class="hero-desc">这里不是把所有文章堆在一页里，而是先按“日报期次”组织，再进入“当日论文集合”，最后阅读单篇长文。这个结构更适合连续追踪 Hugging Face 高热度论文，也更符合 open-design 强调的清晰路径与信息分层。</p>
+      <div class="hero-actions">
+        <a class="button-link primary" href="#issue-grid">查看期次归档</a>
+        <a class="button-link" href="{{ .Site.Home.RelPermalink }}">返回首页</a>
       </div>
     </div>
+
+    <aside class="hero-side">
+      <div class="section-kicker">Archive Stats</div>
+      <div class="stats-grid">
+        <div class="stat">
+          <div class="stat-label">已发布期数</div>
+          <div class="stat-value">{{ len $grouped }}</div>
+          <div class="stat-note">按日期倒序浏览</div>
+        </div>
+        <div class="stat">
+          <div class="stat-label">当前总论文</div>
+          <div class="stat-value">{{ len $datePages }}</div>
+          <div class="stat-note">每篇进入独立正文页</div>
+        </div>
+      </div>
+      {{ with $latestGroup }}
+        <div class="callout-card" style="padding:18px;">
+          <div class="mini-label" style="color:var(--muted); margin-bottom:8px;">Latest Issue</div>
+          <h3 style="margin:0 0 8px;">{{ .Key }}</h3>
+          <p style="margin:0; color:var(--fg-soft);">最新一期包含 {{ len .Pages }} 篇论文。先进入当日导航，再按主题逐篇阅读。</p>
+        </div>
+      {{ end }}
+    </aside>
+  </section>
+
+  <section class="content-card section-block" id="issue-grid">
+    <div class="section-head">
+      <div>
+        <div class="section-kicker">Issue Directory</div>
+        <h2 class="section-title">日报期次归档</h2>
+        <p class="section-desc">每个卡片代表一个日报期次，内部再组织该日期下的论文集合。卡片会显示论文数量，以及本期收录的部分论文标题。</p>
+      </div>
+    </div>
+
     <div class="date-grid">
-      {{ range $grouped }}
-        {{ $datePage := index .Pages 0 }}
-        <a class="card-link" href="{{ $datePage.CurrentSection.RelPermalink }}">
-          <div class="card-kicker">论文日报</div>
-          <div class="card-title">{{ .Key }}</div>
-          <div class="card-desc">{{ len .Pages }} 篇论文</div>
+      {{ range $idx, $issue := $grouped }}
+        {{ $pages := sort $issue.Pages "Title" "asc" }}
+        {{ $datePage := index $pages 0 }}
+        <a class="date-card" href="{{ $datePage.CurrentSection.RelPermalink }}">
+          <div class="chip-row">
+            <span class="chip accent">Issue</span>
+            {{ if eq $idx 0 }}<span class="chip">Latest</span>{{ end }}
+            <span class="chip">{{ len $pages }} 篇</span>
+          </div>
+          <div class="card-kicker">HF 论文日报</div>
+          <div class="card-title">{{ $issue.Key }}</div>
+          <div class="card-desc">进入该日期的论文导航页，查看当日所有论文卡片、标签和正文入口。</div>
+          <div class="tag-row">
+            {{ range first 3 $pages }}<span class="tag">{{ .Title | truncate 22 }}</span>{{ end }}
+          </div>
           <div class="card-meta">
-            <span>打开当日论文导航</span>
+            <span>打开当日期次</span>
             <span>→</span>
           </div>
         </a>
@@ -31,51 +73,89 @@
     </div>
   </section>
 {{ else }}
-  {{ $papers := where .RegularPages "Section" "posts" }}
-  <section class="hero-card">
-    <div class="eyebrow">Daily Bundle</div>
-    <h1 class="hero-title">{{ .Title }}</h1>
-    <p class="hero-desc">这是某一日的论文导航页。先看当天有哪些论文，再逐篇进入完整正文。</p>
-    <div class="action-row">
-      <a class="button-link" href="{{ "posts/" | relURL }}">← 返回日期导航</a>
-      <a class="button-link primary" href="#paper-list">查看当天论文</a>
+  {{ $papers := sort .RegularPages "Title" "asc" }}
+
+  <section class="hero">
+    <div class="hero-main">
+      <div class="eyebrow">Daily Bundle</div>
+      <h1 class="hero-title">{{ .Title }}</h1>
+      <p class="hero-desc">{{ with .Params.description }}{{ . }}{{ else }}这是一个按日期组织的论文集合页。你可以先快速浏览当天收录的论文卡片，再进入单篇文章查看完整长文、图表与章节结构。{{ end }}</p>
+      <div class="hero-actions">
+        <a class="button-link primary" href="#paper-list">查看当天论文</a>
+        <a class="button-link" href="{{ "posts/" | relURL }}">返回期次归档</a>
+      </div>
     </div>
+
+    <aside class="hero-side">
+      <div class="section-kicker">Issue Snapshot</div>
+      <div class="stats-grid">
+        <div class="stat">
+          <div class="stat-label">论文数量</div>
+          <div class="stat-value">{{ len $papers }}</div>
+          <div class="stat-note">单篇独立阅读页</div>
+        </div>
+        <div class="stat">
+          <div class="stat-label">阅读路径</div>
+          <div class="stat-value">列表 → 正文</div>
+          <div class="stat-note">更适合连续研究</div>
+        </div>
+      </div>
+      <div class="callout-card" style="padding:18px;">
+        <div class="mini-label" style="color:var(--muted); margin-bottom:8px;">How To Use</div>
+        <p style="margin:0; color:var(--fg-soft);">建议先从卡片查看论文主题，再点进单篇正文页。正文页提供同日报导航、章节目录和图表预览，适合批量追踪与深读切换。</p>
+      </div>
+    </aside>
   </section>
 
   <div class="content-grid">
-    <aside class="glass-card sidebar">
-      <h3>当日论文导航</h3>
-      <p>侧边栏会保留当天全部论文的快速入口，便于连续阅读。</p>
-      <ul class="sidebar-list">
-        {{ range sort $papers "Title" "asc" }}
-        <li><a href="{{ .RelPermalink }}">{{ .Title }}</a></li>
-        {{ end }}
-      </ul>
-    </aside>
+    <div class="sidebar-stack">
+      <aside class="sidebar-card">
+        <div class="toc-title" style="margin-bottom:10px; color:var(--muted);">Issue Navigator</div>
+        <h3>当日论文导航</h3>
+        <p>先看全量论文，再决定深入哪一篇。当前期次共 {{ len $papers }} 篇。</p>
+        <ul class="sidebar-list">
+          {{ range $papers }}
+            <li><a href="{{ .RelPermalink }}">{{ .Title }}</a></li>
+          {{ end }}
+        </ul>
+      </aside>
 
-    <section class="glass-card" id="paper-list" style="padding:28px;">
+      <aside class="summary-card">
+        <div class="toc-title" style="margin-bottom:10px; color:var(--muted);">Reading Pattern</div>
+        <h3>推荐阅读方式</h3>
+        <p>如果你是第一次进入这一天，先浏览卡片摘要与标签；如果你已经知道目标论文，直接从侧栏进入单篇正文更高效。</p>
+      </aside>
+    </div>
+
+    <section class="content-card" id="paper-list">
       <div class="section-head">
         <div>
-          <h2>📄 {{ len $papers }} 篇论文</h2>
-          <p>点击卡片进入单篇正文页。</p>
+          <div class="section-kicker">Paper Entries</div>
+          <h2 class="section-title">当日论文列表</h2>
+          <p class="section-desc">每张卡片都提供论文标题、简短导读、标签和正文入口。页面结构优先服务于阅读决策，而不是堆砌所有正文内容。</p>
         </div>
       </div>
+
       <div class="paper-grid">
-        {{ range sort $papers "Title" "asc" }}
-        <a class="card-link" href="{{ .RelPermalink }}">
-          <div class="card-kicker">论文条目</div>
-          <div class="card-title">{{ .Title }}</div>
-          <div class="card-desc">{{ with .Params.arxiv_id }}arXiv: {{ . }}{{ else }}进入论文详情{{ end }}</div>
-          <div class="card-meta">
-            <span>{{ .Date.Format "2006-01-02" }}</span>
-            <span>阅读正文 →</span>
-          </div>
-          {{ with .Params.tags }}
-          <div class="tag-row">
-            {{ range . }}<span class="tag">{{ . }}</span>{{ end }}
-          </div>
-          {{ end }}
-        </a>
+        {{ range $papers }}
+          <a class="paper-card" href="{{ .RelPermalink }}">
+            <div class="chip-row">
+              {{ with .Params.arxiv_id }}<span class="chip">arXiv: {{ . }}</span>{{ end }}
+              <span class="chip">{{ .Date.Format "2006-01-02" }}</span>
+            </div>
+            <div class="card-kicker">Deep Reading Entry</div>
+            <div class="card-title">{{ .Title }}</div>
+            <div class="card-desc">{{ with .Params.description }}{{ . }}{{ else }}{{ .Summary | plainify | truncate 140 }}{{ end }}</div>
+            {{ with .Params.tags }}
+              <div class="tag-row">
+                {{ range . }}<span class="tag">{{ . }}</span>{{ end }}
+              </div>
+            {{ end }}
+            <div class="card-meta">
+              <span>进入单篇正文</span>
+              <span>阅读长文 →</span>
+            </div>
+          </a>
         {{ end }}
       </div>
     </section>

@@ -1,9 +1,15 @@
 baseURL = "https://xiaobin01.github.io/hf-paper-daily-blog/"
 languageCode = "zh-CN"
-title = "HF Paper Daily Blog"
+title = "HF Paper Daily"
 
-[markup.goldmark.renderer]
-  unsafe = true
+[markup]
+  [markup.goldmark]
+    [markup.goldmark.renderer]
+      unsafe = true
+  [markup.tableOfContents]
+    startLevel = 2
+    endLevel = 3
+    ordered = false
 
 [params]
   description = "每日 HuggingFace 热门 AI 论文深度阅读"

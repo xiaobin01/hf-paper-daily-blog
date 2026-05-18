@@ -4,53 +4,128 @@
 {{ $latestGroup := index $grouped 0 }}
 {{ $latestCount := 0 }}
 {{ if $latestGroup }}{{ $latestCount = len $latestGroup.Pages }}{{ end }}
+{{ $latestPage := false }}
+{{ if $latestGroup }}{{ $latestPage = index $latestGroup.Pages 0 }}{{ end }}
 
-<section class="hero-card">
-  <div class="eyebrow">✦ 结构化论文阅读导航</div>
-  <h1 class="hero-title">先选日期，再进入当天论文列表，最后深入单篇解读。</h1>
-  <p class="hero-desc">
-    参考 open-design 强调的信息层级、清晰路径与卡片化浏览体验，首页不再堆叠所有文章入口，而是优先展示“日报日期导航”。你可以像浏览研究档案一样，先定位某一天，再进入当天的论文集合页。
-  </p>
-  <div class="hero-meta">
-    <div class="metric">
-      <div class="metric-label">已收录日报</div>
-      <div class="metric-value">{{ len $grouped }}</div>
-    </div>
-    <div class="metric">
-      <div class="metric-label">最新一期论文数</div>
-      <div class="metric-value">{{ $latestCount }}</div>
-    </div>
-    <div class="metric">
-      <div class="metric-label">浏览方式</div>
-      <div class="metric-value">日期 → 论文 → 正文</div>
+<section class="hero">
+  <div class="hero-main">
+    <div class="eyebrow">Research Reading Product</div>
+    <h1 class="hero-title">把 Hugging Face 每日热门论文，整理成适合连续追踪与深度阅读的网站。</h1>
+    <p class="hero-desc">这个站点不只是论文列表，而是一套完整的阅读路径：先看日期期次，再看当天论文集合，最后进入单篇长文与图表分析。设计上参考 open-design 的分层思路，并吸收 Hugging Face / Notion / Linear 的优点：清晰结构、克制视觉、强可读性。</p>
+    <div class="hero-actions">
+      <a class="button-link primary" href="{{ "posts/" | relURL }}">进入论文归档</a>
+      {{ if $latestPage }}
+      <a class="button-link" href="{{ $latestPage.CurrentSection.RelPermalink }}">查看最新一期</a>
+      {{ end }}
     </div>
   </div>
-  <div class="action-row" style="margin-top:24px;">
-    <a class="button-link primary" href="{{ "posts/" | relURL }}">查看所有日期</a>
-    {{ if $latestGroup }}
-    {{ $latestPage := index $latestGroup.Pages 0 }}
-    <a class="button-link" href="{{ $latestPage.CurrentSection.RelPermalink }}">进入最新日报</a>
-    {{ end }}
+
+  <aside class="hero-side">
+    <div class="section-kicker">Site Snapshot</div>
+    <div class="stats-grid">
+      <div class="stat">
+        <div class="stat-label">已发布期次</div>
+        <div class="stat-value">{{ len $grouped }}</div>
+        <div class="stat-note">按日期归档</div>
+      </div>
+      <div class="stat">
+        <div class="stat-label">总论文数</div>
+        <div class="stat-value">{{ len $datePages }}</div>
+        <div class="stat-note">单篇独立长文</div>
+      </div>
+      <div class="stat">
+        <div class="stat-label">最新一期</div>
+        <div class="stat-value">{{ $latestCount }}</div>
+        <div class="stat-note">篇论文已上线</div>
+      </div>
+    </div>
+  </aside>
+</section>
+
+<section class="content-card section-block">
+  <div class="section-head">
+    <div>
+      <div class="section-kicker">Reading Flow</div>
+      <h2 class="section-title">这个网站如何组织论文阅读</h2>
+      <p class="section-desc">先确定“今天看哪一期”，再决定“这一期先读哪篇”，最后进入“单篇长文、图表与章节目录”。这样的网站结构更适合每日更新场景。</p>
+    </div>
+  </div>
+
+  <div class="feature-grid">
+    <div class="callout-card">
+      <div class="card-kicker">Step 01</div>
+      <div class="card-title">先选日期期次</div>
+      <div class="card-desc">首页不堆文章全文，而是优先展示日报期次，让用户先完成“按天浏览”的定位动作。</div>
+    </div>
+    <div class="callout-card">
+      <div class="card-kicker">Step 02</div>
+      <div class="card-title">再看当天论文集合</div>
+      <div class="card-desc">期次页使用论文卡片呈现当天收录内容，帮助用户先快速筛选目标论文。</div>
+    </div>
+    <div class="callout-card">
+      <div class="card-kicker">Step 03</div>
+      <div class="card-title">最后进入单篇长文</div>
+      <div class="card-desc">单篇页会保留同日报导航、章节结构与图表预览，在批量浏览与深读之间切换更自然。</div>
+    </div>
   </div>
 </section>
 
-<section class="glass-card" style="padding:28px;">
+<section class="content-card section-block">
   <div class="section-head">
     <div>
-      <h2>📅 每日日期导航</h2>
-      <p>每个卡片代表一个日报日期，点击后进入该日期下的论文导航页。</p>
+      <div class="section-kicker">Latest Issue</div>
+      <h2 class="section-title">最新一期</h2>
+      <p class="section-desc">优先把最近更新放到首页第二屏，方便回访用户直接进入当天内容。</p>
     </div>
   </div>
 
-  <div class="date-grid">
-    {{ range $grouped }}
-      {{ $datePage := index .Pages 0 }}
-      <a class="card-link" href="{{ $datePage.CurrentSection.RelPermalink }}">
-        <div class="card-kicker">日报日期</div>
-        <div class="card-title">{{ .Key }}</div>
-        <div class="card-desc">{{ len .Pages }} 篇论文摘要与图文解读</div>
+  {{ if $latestGroup }}
+    {{ $pages := sort $latestGroup.Pages "Title" "asc" }}
+    {{ $issuePage := index $pages 0 }}
+    <div class="paper-grid">
+      <a class="paper-card" href="{{ $issuePage.CurrentSection.RelPermalink }}">
+        <div class="chip-row">
+          <span class="chip accent">Latest Issue</span>
+          <span class="chip">{{ $latestGroup.Key }}</span>
+          <span class="chip">{{ len $pages }} 篇</span>
+        </div>
+        <div class="card-kicker">Issue Entry</div>
+        <div class="card-title">{{ $latestGroup.Key }} 论文日报</div>
+        <div class="card-desc">从这里进入最新一期的论文导航页，再从当天卡片中挑选感兴趣的论文进入深读。</div>
+        <div class="tag-row">
+          {{ range first 4 $pages }}<span class="tag">{{ .Title | truncate 26 }}</span>{{ end }}
+        </div>
         <div class="card-meta">
-          <span>进入当天导航页</span>
+          <span>进入最新期次</span>
+          <span>→</span>
+        </div>
+      </a>
+    </div>
+  {{ else }}
+    <div class="empty-card">目前还没有可展示的日报内容。</div>
+  {{ end }}
+</section>
+
+<section class="content-card section-block">
+  <div class="section-head">
+    <div>
+      <div class="section-kicker">Archive Preview</div>
+      <h2 class="section-title">最近期次预览</h2>
+      <p class="section-desc">保留少量最近期次作为入口预览，完整列表仍然集中在归档页。</p>
+    </div>
+    <a class="button-link" href="{{ "posts/" | relURL }}">查看完整归档</a>
+  </div>
+
+  <div class="date-grid">
+    {{ range first 6 $grouped }}
+      {{ $pages := sort .Pages "Title" "asc" }}
+      {{ $issuePage := index $pages 0 }}
+      <a class="date-card" href="{{ $issuePage.CurrentSection.RelPermalink }}">
+        <div class="card-kicker">Issue Preview</div>
+        <div class="card-title">{{ .Key }}</div>
+        <div class="card-desc">{{ len $pages }} 篇论文，进入当日期次后再逐篇深读。</div>
+        <div class="card-meta">
+          <span>打开期次</span>
           <span>→</span>
         </div>
       </a>
