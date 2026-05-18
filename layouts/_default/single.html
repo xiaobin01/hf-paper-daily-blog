@@ -1,6 +1,53 @@
 {{ define "main" }}
-<article>
-  <a href="{{ .CurrentSection.RelPermalink }}" class="back-link">← 返回日报：{{ .Date.Format "2006-01-02" }}</a>
-  {{ .Content }}
-</article>
+{{ $section := .CurrentSection }}
+{{ $siblings := slice }}
+{{ if $section }}
+  {{ $siblings = sort ($section.RegularPages) "Title" "asc" }}
+{{ end }}
+
+<div class="content-grid">
+  <aside class="glass-card sidebar">
+    <h3>当日论文导航</h3>
+    <p>{{ if $section }}{{ $section.Title }}{{ else }}同日报论文{{ end }}</p>
+    <ul class="sidebar-list">
+      {{ if $section }}
+        <li><a href="{{ $section.RelPermalink }}">← 返回当日导航页</a></li>
+      {{ else }}
+        <li><a href="{{ "posts/" | relURL }}">← 返回日期导航</a></li>
+      {{ end }}
+      {{ range $siblings }}
+      <li>
+        <a class="{{ if eq .RelPermalink $.RelPermalink }}current{{ end }}" href="{{ .RelPermalink }}">{{ .Title }}</a>
+      </li>
+      {{ end }}
+    </ul>
+  </aside>
+
+  <article class="glass-card article-shell">
+    <div class="breadcrumbs">
+      <a href="{{ .Site.Home.RelPermalink }}">首页</a>
+      <span>•</span>
+      <a href="{{ "posts/" | relURL }}">日报导航</a>
+      {{ if $section }}
+      <span>•</span>
+      <a href="{{ $section.RelPermalink }}">{{ $section.Title }}</a>
+      {{ end }}
+      <span>•</span>
+      <span>{{ .Title }}</span>
+    </div>
+
+    <div class="article-meta-strip">
+      <span class="chip">📅 {{ .Date.Format "2006-01-02" }}</span>
+      {{ with .Params.arxiv_id }}<span class="chip">arXiv: {{ . }}</span>{{ end }}
+      {{ with .Params.tags }}{{ range . }}<span class="chip">{{ . }}</span>{{ end }}{{ end }}
+    </div>
+
+    <div class="action-row" style="margin-bottom:18px;">
+      {{ if $section }}<a class="button-link" href="{{ $section.RelPermalink }}">← 返回当日论文列表</a>{{ end }}
+      <a class="button-link" href="{{ "posts/" | relURL }}">查看所有日期</a>
+    </div>
+
+    {{ .Content }}
+  </article>
+</div>
 {{ end }}

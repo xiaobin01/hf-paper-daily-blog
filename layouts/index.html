@@ -1,21 +1,60 @@
 {{ define "main" }}
-<div style="text-align:center;padding:60px 0;">
-  <h2>📚 每日 HuggingFace 热门 AI 论文深度阅读</h2>
-  <p style="margin:16px 0;color:#666;">每天自动抓取 Top 10 热门论文，AI 深度解读，图文并茂</p>
-  <p style="margin:20px 0;">
-    <a href="{{ "posts" | relURL }}" style="display:inline-block;padding:12px 24px;background:var(--link);color:#fff;border-radius:6px;font-size:1.1em;">📖 浏览日报</a>
+{{ $datePages := where .Site.RegularPages "Section" "posts" }}
+{{ $grouped := $datePages.GroupByDate "2006-01-02" "desc" }}
+{{ $latestGroup := index $grouped 0 }}
+{{ $latestCount := 0 }}
+{{ if $latestGroup }}{{ $latestCount = len $latestGroup.Pages }}{{ end }}
+
+<section class="hero-card">
+  <div class="eyebrow">✦ 结构化论文阅读导航</div>
+  <h1 class="hero-title">先选日期，再进入当天论文列表，最后深入单篇解读。</h1>
+  <p class="hero-desc">
+    参考 open-design 强调的信息层级、清晰路径与卡片化浏览体验，首页不再堆叠所有文章入口，而是优先展示“日报日期导航”。你可以像浏览研究档案一样，先定位某一天，再进入当天的论文集合页。
   </p>
-</div>
-<ul class="paper-list">
-  <h3 style="margin:20px 0 12px;">📰 最近更新</h3>
-  {{ range first 10 (sort (where .Site.Pages "Type" "posts") "Date" "desc") }}
-  <li class="paper-item">
-    <h4><a href="{{ .RelPermalink }}">{{ .Title }}</a></h4>
-    <div class="paper-meta">
-      📅 {{ .Date.Format "2006-01-02" }}
-      {{ with .Params.arxiv_id }}· arXiv: {{ . }}{{ end }}
+  <div class="hero-meta">
+    <div class="metric">
+      <div class="metric-label">已收录日报</div>
+      <div class="metric-value">{{ len $grouped }}</div>
     </div>
-  </li>
-  {{ end }}
-</ul>
+    <div class="metric">
+      <div class="metric-label">最新一期论文数</div>
+      <div class="metric-value">{{ $latestCount }}</div>
+    </div>
+    <div class="metric">
+      <div class="metric-label">浏览方式</div>
+      <div class="metric-value">日期 → 论文 → 正文</div>
+    </div>
+  </div>
+  <div class="action-row" style="margin-top:24px;">
+    <a class="button-link primary" href="{{ "posts/" | relURL }}">查看所有日期</a>
+    {{ if $latestGroup }}
+    {{ $latestPage := index $latestGroup.Pages 0 }}
+    <a class="button-link" href="{{ $latestPage.CurrentSection.RelPermalink }}">进入最新日报</a>
+    {{ end }}
+  </div>
+</section>
+
+<section class="glass-card" style="padding:28px;">
+  <div class="section-head">
+    <div>
+      <h2>📅 每日日期导航</h2>
+      <p>每个卡片代表一个日报日期，点击后进入该日期下的论文导航页。</p>
+    </div>
+  </div>
+
+  <div class="date-grid">
+    {{ range $grouped }}
+      {{ $datePage := index .Pages 0 }}
+      <a class="card-link" href="{{ $datePage.CurrentSection.RelPermalink }}">
+        <div class="card-kicker">日报日期</div>
+        <div class="card-title">{{ .Key }}</div>
+        <div class="card-desc">{{ len .Pages }} 篇论文摘要与图文解读</div>
+        <div class="card-meta">
+          <span>进入当天导航页</span>
+          <span>→</span>
+        </div>
+      </a>
+    {{ end }}
+  </div>
+</section>
 {{ end }}

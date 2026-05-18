@@ -1,19 +1,84 @@
 {{ define "main" }}
-<h2>📅 论文日报</h2>
-<ul class="paper-list">
-  {{ $paginator := .Paginate (sort (where .Site.Pages "Type" "posts") "Date" "desc") }}
-  {{ range $paginator.Pages }}
-  <li class="paper-item">
-    <h3><a href="{{ .RelPermalink }}">{{ .Title }}</a></h3>
-    <div class="paper-meta">
-      📅 {{ .Date.Format "2006-01-02" }}
-      {{ with .Params.arxiv_id }}· arXiv: {{ . }}{{ end }}
+{{ if and (eq .Section "posts") (eq .Kind "section") (eq .RelPermalink ("posts/" | relURL)) }}
+  {{ $datePages := where .Site.RegularPages "Section" "posts" }}
+  {{ $grouped := $datePages.GroupByDate "2006-01-02" "desc" }}
+  <section class="hero-card">
+    <div class="eyebrow">Archive</div>
+    <h1 class="hero-title">按日期浏览每一期论文日报。</h1>
+    <p class="hero-desc">这里是完整日报索引页。你先选择某一天，再进入该日期的论文列表，不再需要在同一页查找所有文章入口。</p>
+  </section>
+
+  <section class="glass-card" style="padding:28px;">
+    <div class="section-head">
+      <div>
+        <h2>🗂 日期总览</h2>
+        <p>所有日报按日期倒序排列。</p>
+      </div>
     </div>
-    {{ if .Params.tags }}
-      {{ range .Params.tags }}<span class="tag">{{ . }}</span>{{ end }}
-    {{ end }}
-  </li>
-  {{ end }}
-</ul>
-{{ template "_internal/pagination.html" . }}
+    <div class="date-grid">
+      {{ range $grouped }}
+        {{ $datePage := index .Pages 0 }}
+        <a class="card-link" href="{{ $datePage.CurrentSection.RelPermalink }}">
+          <div class="card-kicker">论文日报</div>
+          <div class="card-title">{{ .Key }}</div>
+          <div class="card-desc">{{ len .Pages }} 篇论文</div>
+          <div class="card-meta">
+            <span>打开当日论文导航</span>
+            <span>→</span>
+          </div>
+        </a>
+      {{ end }}
+    </div>
+  </section>
+{{ else }}
+  {{ $papers := where .RegularPages "Section" "posts" }}
+  <section class="hero-card">
+    <div class="eyebrow">Daily Bundle</div>
+    <h1 class="hero-title">{{ .Title }}</h1>
+    <p class="hero-desc">这是某一日的论文导航页。先看当天有哪些论文，再逐篇进入完整正文。</p>
+    <div class="action-row">
+      <a class="button-link" href="{{ "posts/" | relURL }}">← 返回日期导航</a>
+      <a class="button-link primary" href="#paper-list">查看当天论文</a>
+    </div>
+  </section>
+
+  <div class="content-grid">
+    <aside class="glass-card sidebar">
+      <h3>当日论文导航</h3>
+      <p>侧边栏会保留当天全部论文的快速入口，便于连续阅读。</p>
+      <ul class="sidebar-list">
+        {{ range sort $papers "Title" "asc" }}
+        <li><a href="{{ .RelPermalink }}">{{ .Title }}</a></li>
+        {{ end }}
+      </ul>
+    </aside>
+
+    <section class="glass-card" id="paper-list" style="padding:28px;">
+      <div class="section-head">
+        <div>
+          <h2>📄 {{ len $papers }} 篇论文</h2>
+          <p>点击卡片进入单篇正文页。</p>
+        </div>
+      </div>
+      <div class="paper-grid">
+        {{ range sort $papers "Title" "asc" }}
+        <a class="card-link" href="{{ .RelPermalink }}">
+          <div class="card-kicker">论文条目</div>
+          <div class="card-title">{{ .Title }}</div>
+          <div class="card-desc">{{ with .Params.arxiv_id }}arXiv: {{ . }}{{ else }}进入论文详情{{ end }}</div>
+          <div class="card-meta">
+            <span>{{ .Date.Format "2006-01-02" }}</span>
+            <span>阅读正文 →</span>
+          </div>
+          {{ with .Params.tags }}
+          <div class="tag-row">
+            {{ range . }}<span class="tag">{{ . }}</span>{{ end }}
+          </div>
+          {{ end }}
+        </a>
+        {{ end }}
+      </div>
+    </section>
+  </div>
+{{ end }}
 {{ end }}
