@@ -2,11 +2,16 @@
 title: "Aligning Latent Geometry for Spherical Flow Matching in Image Generation"
 date: 2026-05-16T09:00:00+08:00
 arxiv_id: "2605.15193"
-description: "一篇围绕 spherical flow matching 的深度论文解读：解释为什么 latent token 的真实几何更像薄球壳，以及作者如何通过固定半径投影与 slerp 路径稳定改善 ImageNet-256 生成质量。"
-tags: ["paper", "AI", "deep-learning", "image-generation", "flow-matching"]
+description: "为图像生成中的球面流匹配对齐潜在几何"
+tags: ["spherical-flow-matching", "flow-matching", "latent-geometry", "slerp", "image-generation"]
 ---
 
-# Aligning Latent Geometry for Spherical Flow Matching in Image Generation
+## 论文链接
+
+- 原始论文页面：https://arxiv.org/abs/2605.15193
+- PDF 下载：https://arxiv.org/pdf/2605.15193.pdf
+- Hugging Face 论文页：https://huggingface.co/papers/2605.15193
+- 项目主页：https://aligning-latent-geometry.github.io
 
 为图像生成中的球面流匹配对齐潜在几何
 

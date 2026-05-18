@@ -84,7 +84,7 @@
           <span class="chip accent">Paper</span>
           <span class="chip">{{ .Date.Format "2006-01-02" }}</span>
           {{ with .Params.arxiv_id }}<span class="chip">arXiv: {{ . }}</span>{{ end }}
-          {{ with .Params.tags }}{{ range . }}<span class="chip">{{ . }}</span>{{ end }}{{ end }}
+          {{ with .Params.tags }}{{ range . }}{{ if ne . "paper" }}<span class="chip">{{ . }}</span>{{ end }}{{ end }}{{ end }}
         </div>
 
         {{ $trimmedRaw := trim .RawContent "\n\r\t " }}
